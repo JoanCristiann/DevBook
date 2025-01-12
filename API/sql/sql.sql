@@ -8,6 +8,6 @@ CREATE TABLE IF NOT EXISTS usuarios(
     nome VARCHAR(50) not null,
     username VARCHAR(50) not null unique,
     email VARCHAR(50) not null unique,
-    senha VARCHAR(20) not null,
+    senha VARCHAR(100) not null,
     criadoEm timestamp default current_timestamp()
 ) ENGINE=INNODB;

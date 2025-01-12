@@ -134,3 +134,22 @@ func (repositorio Usuarios) Excluir(ID uint64) error {
 
 	return nil
 }
+
+func (repositorio Usuarios) BuscarPorEmail(email string) (models.Usuario, error) {
+	linha, err := repositorio.db.Query(
+		"SELECT id, senha FROM usuarios WHERE email = ?", email)
+	if err != nil {
+		return models.Usuario{}, err
+	}
+	defer linha.Close()
+
+	var usuario models.Usuario
+
+	if linha.Next() {
+		if err = linha.Scan(&usuario.ID, &usuario.Senha); err != nil {
+			return models.Usuario{}, err
+		}
+	}
+
+	return usuario, nil
+}
