@@ -1,11 +1,13 @@
 package controllers
 
 import (
+	"api/src/autenticacao"
 	"api/src/banco"
 	"api/src/models"
 	"api/src/repositorios"
 	"api/src/responses"
 	"encoding/json"
+	"errors"
 	"io"
 	"net/http"
 	"strconv"
@@ -104,6 +106,17 @@ func AtualizarUsuario(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	usuarioIDNoToken, err := autenticacao.ExtrairUsuarioID(r)
+	if err != nil {
+		responses.Erro(w, http.StatusUnauthorized, err)
+		return
+	}
+
+	if usuarioIDNoToken != usuarioID {
+		responses.Erro(w, http.StatusForbidden, errors.New("não é permitido atualizar um usuário que não seja o seu"))
+		return
+	}
+
 	corpoRequisicao, err := io.ReadAll(r.Body)
 	if err != nil {
 		responses.Erro(w, http.StatusUnprocessableEntity, err)
@@ -143,6 +156,17 @@ func ExcluirUsuario(w http.ResponseWriter, r *http.Request) {
 	usuarioID, err := strconv.ParseUint(parametros["usuarioId"], 10, 64)
 	if err != nil {
 		responses.Erro(w, http.StatusBadRequest, err)
+		return
+	}
+
+	usuarioIDNoToken, err := autenticacao.ExtrairUsuarioID(r)
+	if err != nil {
+		responses.Erro(w, http.StatusUnauthorized, err)
+		return
+	}
+
+	if usuarioIDNoToken != usuarioID {
+		responses.Erro(w, http.StatusForbidden, errors.New("não é permitido excluir um usuário que não seja o seu"))
 		return
 	}
 
