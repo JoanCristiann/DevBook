@@ -153,3 +153,99 @@ func (repositorio Usuarios) BuscarPorEmail(email string) (models.Usuario, error)
 
 	return usuario, nil
 }
+
+func (repositorio Usuarios) Seguir(usuarioID, seguidorID uint64) error {
+	statement, err := repositorio.db.Prepare(
+		"INSERT IGNORE INTO seguidores(usuario_id, seguidor_id) VALUES(?, ?)",
+	)
+	if err != nil {
+		return err
+	}
+	defer statement.Close()
+
+	if _, err = statement.Exec(usuarioID, seguidorID); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (repositorio Usuarios) PararDeSeguir(usuarioID, seguidorID uint64) error {
+	statement, err := repositorio.db.Prepare(
+		"DELETE FROM seguidores WHERE usuario_id = ? AND seguidor_id = ?",
+	)
+	if err != nil {
+		return err
+	}
+	defer statement.Close()
+
+	if _, err = statement.Exec(usuarioID, seguidorID); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (repositorio Usuarios) BuscarSeguidores(usuarioID uint64) ([]models.Usuario, error) {
+	linhas, err := repositorio.db.Query(`
+		SELECT u.id, u.nome, u.username, u.email, u.criadoEm
+		FROM usuarios u
+		INNER JOIN seguidores s ON s.seguidor_id = u.id
+		WHERE s.usuario_id = ?
+	`, usuarioID)
+	if err != nil {
+		return nil, err
+	}
+	defer linhas.Close()
+
+	var usuarios []models.Usuario
+	for linhas.Next() {
+		var usuario models.Usuario
+
+		if err = linhas.Scan(
+			&usuario.ID,
+			&usuario.Nome,
+			&usuario.Username,
+			&usuario.Email,
+			&usuario.CriadoEm,
+		); err != nil {
+			return nil, err
+		}
+
+		usuarios = append(usuarios, usuario)
+	}
+
+	return usuarios, nil
+}
+
+func (repositorio Usuarios) BuscarSeguindo(usuarioID uint64) ([]models.Usuario, error) {
+	linhas, err := repositorio.db.Query(`
+		SELECT u.id, u.nome, u.username, u.email, u.criadoEm
+		FROM usuarios u
+		INNER JOIN seguidores s ON s.usuario_id = u.id
+		WHERE s.seguidor_id = ?
+	`, usuarioID)
+	if err != nil {
+		return nil, err
+	}
+	defer linhas.Close()
+
+	var usuarios []models.Usuario
+	for linhas.Next() {
+		var usuario models.Usuario
+
+		if err = linhas.Scan(
+			&usuario.ID,
+			&usuario.Nome,
+			&usuario.Username,
+			&usuario.Email,
+			&usuario.CriadoEm,
+		); err != nil {
+			return nil, err
+		}
+
+		usuarios = append(usuarios, usuario)
+	}
+
+	return usuarios, nil
+}
