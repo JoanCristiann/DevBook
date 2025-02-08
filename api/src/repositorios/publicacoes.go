@@ -106,3 +106,73 @@ func (repositorio Publicacoes) Buscar(usuarioID uint64) ([]models.Publicacao, er
 
 	return publicacoes, nil
 }
+
+func (repositorio Publicacoes) Atualizar(publicacaoID uint64, publicacao models.Publicacao) error {
+	statement, err := repositorio.db.Prepare(
+		"UPDATE publicacoes SET titulo = ?, conteudo = ? WHERE id = ?",
+	)
+	if err != nil {
+		return err
+	}
+	defer statement.Close()
+
+	if _, err = statement.Exec(
+		publicacao.Titulo,
+		publicacao.Conteudo,
+		publicacaoID,
+	); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (repositorio Publicacoes) Deletar(publicacaoID uint64) error {
+	statement, err := repositorio.db.Prepare("DELETE FROM publicacoes WHERE ID = ?")
+	if err != nil {
+		return err
+	}
+	defer statement.Close()
+
+	if _, err = statement.Exec(publicacaoID); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (repositorio Publicacoes) BuscarPorUsuario(usuarioID uint64) ([]models.Publicacao, error) {
+	linhas, err := repositorio.db.Query(`
+		SELECT P.*, U.username FROM publicacoes P
+		INNER JOIN usuarios U ON U.id = P.autor_id
+		WHERE P.autor_id = ?
+		ORDER BY P.criadaEm DESC`,
+		usuarioID,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer linhas.Close()
+
+	var publicacoes []models.Publicacao
+
+	for linhas.Next() {
+		var publicacao models.Publicacao
+
+		if err = linhas.Scan(
+			&publicacao.ID,
+			&publicacao.Titulo,
+			&publicacao.Conteudo,
+			&publicacao.AutorID,
+			&publicacao.Likes,
+			&publicacao.CriadaEm,
+			&publicacao.AutorUsername,
+		); err != nil {
+			return nil, err
+		}
+
+		publicacoes = append(publicacoes, publicacao)
+	}
+
+	return publicacoes, nil
+}
