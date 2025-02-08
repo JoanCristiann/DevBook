@@ -33,7 +33,19 @@ var rotasPublicacoes = []Rota{
 	{
 		URI:                "/publicacoes/{publicacaoId}",
 		Metodo:             http.MethodDelete,
-		Funcao:             controllers.DeletePublicacao,
+		Funcao:             controllers.DeletarPublicacao,
+		RequerAutenticacao: true,
+	},
+	{
+		URI:                "/usuarios/{usuarioId}/publicacoes",
+		Metodo:             http.MethodGet,
+		Funcao:             controllers.BuscarPublicacoesPorUsuario,
+		RequerAutenticacao: true,
+	},
+	{
+		URI:                "/publicacoes/{publicacaoId}/like",
+		Metodo:             http.MethodPost,
+		Funcao:             controllers.LikePublicacao,
 		RequerAutenticacao: true,
 	},
 }
