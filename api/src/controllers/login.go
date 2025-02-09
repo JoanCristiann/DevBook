@@ -39,7 +39,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err = seguranca.CompararSenhaComHash(usuarioSalvoNoBanco.Senha, usuario.Senha); err != nil {
+	if err = seguranca.CompararHashComSenha(usuarioSalvoNoBanco.Senha, usuario.Senha); err != nil {
 		responses.Erro(w, http.StatusUnauthorized, err)
 		return
 	}
