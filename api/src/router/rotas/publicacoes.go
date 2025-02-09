@@ -48,4 +48,10 @@ var rotasPublicacoes = []Rota{
 		Funcao:             controllers.LikePublicacao,
 		RequerAutenticacao: true,
 	},
+	{
+		URI:                "/publicacoes/{publicacaoId}/remover-like",
+		Metodo:             http.MethodPost,
+		Funcao:             controllers.RemoverLikePublicacao,
+		RequerAutenticacao: true,
+	},
 }

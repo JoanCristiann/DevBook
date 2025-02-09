@@ -176,3 +176,39 @@ func (repositorio Publicacoes) BuscarPorUsuario(usuarioID uint64) ([]models.Publ
 
 	return publicacoes, nil
 }
+
+// Like adiciona um like na publicação
+func (repositorio Publicacoes) Like(publicacaoID uint64) error {
+	statement, err := repositorio.db.Prepare("UPDATE publicacoes SET likes = likes + 1 WHERE id = ?")
+	if err != nil {
+		return err
+	}
+	defer statement.Close()
+
+	if _, err = statement.Exec(publicacaoID); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// RemoverLike subtrai um like da publicação
+func (repositorio Publicacoes) RemoverLike(publicacaoID uint64) error {
+	statement, err := repositorio.db.Prepare(`
+		UPDATE publicacoes SET likes = 
+		CASE 
+			WHEN likes > 0 THEN likes - 1 
+			ELSE 0 
+		END 
+		WHERE id = ?`)
+	if err != nil {
+		return err
+	}
+	defer statement.Close()
+
+	if _, err = statement.Exec(publicacaoID); err != nil {
+		return err
+	}
+
+	return nil
+}
