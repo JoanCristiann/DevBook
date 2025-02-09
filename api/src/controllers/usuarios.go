@@ -352,7 +352,7 @@ func AtualizarSenha(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err = seguranca.CompararSenhaComHash(senhaSalvaNoBanco, senha.Atual); err != nil {
+	if err = seguranca.CompararHashComSenha(senhaSalvaNoBanco, senha.Atual); err != nil {
 		responses.Erro(w, http.StatusUnauthorized, errors.New("a senha atual está incorreta"))
 		return
 	}
