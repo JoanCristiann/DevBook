@@ -2,7 +2,7 @@ package middlewares
 
 import (
 	"api/src/autenticacao"
-	"api/src/responses"
+	"api/src/respostas"
 	"fmt"
 	"net/http"
 )
@@ -17,7 +17,7 @@ func Logger(proximaFuncao http.HandlerFunc) http.HandlerFunc {
 func Autenticar(proximaFuncao http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if err := autenticacao.ValidarToken(r); err != nil {
-			responses.Erro(w, http.StatusUnauthorized, err)
+			respostas.Erro(w, http.StatusUnauthorized, err)
 			return
 		}
 		proximaFuncao(w, r)

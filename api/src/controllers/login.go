@@ -5,7 +5,7 @@ import (
 	"api/src/banco"
 	"api/src/models"
 	"api/src/repositorios"
-	"api/src/responses"
+	"api/src/respostas"
 	"api/src/seguranca"
 	"encoding/json"
 	"io"
@@ -15,19 +15,19 @@ import (
 func Login(w http.ResponseWriter, r *http.Request) {
 	corpoRequisicao, err := io.ReadAll(r.Body)
 	if err != nil {
-		responses.Erro(w, http.StatusUnprocessableEntity, err)
+		respostas.Erro(w, http.StatusUnprocessableEntity, err)
 		return
 	}
 
 	var usuario models.Usuario
 	if err = json.Unmarshal(corpoRequisicao, &usuario); err != nil {
-		responses.Erro(w, http.StatusBadRequest, err)
+		respostas.Erro(w, http.StatusBadRequest, err)
 		return
 	}
 
 	db, err := banco.Conectar()
 	if err != nil {
-		responses.Erro(w, http.StatusInternalServerError, err)
+		respostas.Erro(w, http.StatusInternalServerError, err)
 		return
 	}
 	defer db.Close()
@@ -35,18 +35,18 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	repositorio := repositorios.NovoRepositorioDeUsuarios(db)
 	usuarioSalvoNoBanco, err := repositorio.BuscarPorEmail(usuario.Email)
 	if err != nil {
-		responses.Erro(w, http.StatusInternalServerError, err)
+		respostas.Erro(w, http.StatusInternalServerError, err)
 		return
 	}
 
 	if err = seguranca.CompararHashComSenha(usuarioSalvoNoBanco.Senha, usuario.Senha); err != nil {
-		responses.Erro(w, http.StatusUnauthorized, err)
+		respostas.Erro(w, http.StatusUnauthorized, err)
 		return
 	}
 
 	token, err := autenticacao.CriarToken(usuarioSalvoNoBanco.ID)
 	if err != nil {
-		responses.Erro(w, http.StatusInternalServerError, err)
+		respostas.Erro(w, http.StatusInternalServerError, err)
 		return
 	}
 
