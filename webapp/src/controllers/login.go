@@ -6,18 +6,17 @@ import (
 	"fmt"
 	"net/http"
 	"webapp/src/config"
+	"webapp/src/models"
 	"webapp/src/respostas"
 )
 
-// CriarUsuario chama a API para cadastrar um usuário no banco de dados
-func CriarUsuario(w http.ResponseWriter, r *http.Request) {
+// FazerLogin utiliza o e-mail e senha do usuário para autenticar na aplicação
+func FazerLogin(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
 
 	usuario, err := json.Marshal(map[string]string{
-		"nome":     r.FormValue("nome"),
-		"email":    r.FormValue("email"),
-		"username": r.FormValue("username"),
-		"senha":    r.FormValue("senha"),
+		"email": r.FormValue("email"),
+		"senha": r.FormValue("senha"),
 	})
 
 	if err != nil {
@@ -25,18 +24,25 @@ func CriarUsuario(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	url := fmt.Sprintf("%s/usuarios", config.APIURL)
+	url := fmt.Sprintf("%s/login", config.APIURL)
 	response, err := http.Post(url, "application/json", bytes.NewBuffer(usuario))
+
 	if err != nil {
 		respostas.JSON(w, http.StatusInternalServerError, respostas.ErroAPI{Erro: err.Error()})
 		return
 	}
-	defer response.Body.Close()
+	response.Body.Close()
 
 	if response.StatusCode >= 400 {
 		respostas.TratarStatusCode(w, response)
 		return
 	}
 
-	respostas.JSON(w, response.StatusCode, nil)
+	var dadosAutenticacao models.DadosAutenticacao
+	if err = json.NewDecoder(response.Body).Decode(&dadosAutenticacao); err != nil {
+		respostas.JSON(w, http.StatusUnprocessableEntity, respostas.ErroAPI{Erro: err.Error()})
+		return
+	}
+
+	respostas.JSON(w, http.StatusOK, nil)
 }

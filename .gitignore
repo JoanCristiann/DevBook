@@ -26,3 +26,6 @@ go.work.sum
 
 # Debug file
 .vscode/launch.json
+
+# Bin file
+/api/api
